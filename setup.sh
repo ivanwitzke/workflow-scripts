@@ -54,8 +54,31 @@ sudo dpkg -i /tmp/st3.deb
 echo "Making sure that no dependencies are missing..."
 sudo apt-get install -f
 
+echo "Installing Composer Package Manager!"
+curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+
+echo "Installing Vhost Manager"
+git clone https://github.com/rubensfernandes/vhost-manager.git /tmp/vhost
+sudo chmod +x /tmp/vhost/vhost
+sudo /tmp/vhost/vhost -install
+
+echo "Installing PHP-Cs"
+curl -o- https://raw.githubusercontent.com/rubensfernandes/scripts-ubuntu/master/install-phpcs | sudo bash
+
+echo "FIX /var/www permissions"
+sudo groupadd www-pub
+sudo usermod -a -G www-pub root
+sudo usermod -a -G www-pub $USER
+sudo usermod -a -G www-pub www-data
+sudo chown -R $USER:www-pub /var/www
+sudo chmod 2775 /var/www
+sudo find /var/www -type d -exec chmod 2775 {} +
+sudo find /var/www -type f -exec chmod 0664 {} +
+echo "umask 0002" | sudo tee -a /etc/profile
+
 echo "Clean unnecessary files"
 rm /tmp/vscode.deb /tmp/st3.deb
+rm -rf /tmp/vhost
 
-
-
+echo "All Done... Please reboot for all changes to take efect..."
